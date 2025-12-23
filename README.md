@@ -5,6 +5,12 @@ A beautiful, offline-capable web application to convert JPEG images to PDF with 
 ![JPEG to PDF Converter](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
+## 🌐 Live Demo
+
+**Try it now:** [https://omnikingzeno.github.io/jpeg-to-pdf/](https://omnikingzeno.github.io/jpeg-to-pdf/)
+
+Works on all devices - desktop, tablet, and mobile!
+
 ## ✨ Features
 
 - 📁 **Select Multiple JPEGs** - Browse or drag-and-drop images
@@ -12,15 +18,17 @@ A beautiful, offline-capable web application to convert JPEG images to PDF with 
 - 📄 **One-Click PDF Generation** - Instantly create downloadable PDFs
 - 🌙 **Beautiful Dark Theme** - Modern, professional UI
 - 📱 **Fully Responsive** - Works on desktop, tablet, and mobile
-- 🔌 **Works Offline** - No internet connection required
+- 🔌 **Works Offline** - No internet connection required (when hosted)
 
 ## 🚀 Quick Start
 
-Simply open `index.html` in any modern web browser!
+### Option 1: Use the Live Demo (Recommended)
+Visit [https://omnikingzeno.github.io/jpeg-to-pdf/](https://omnikingzeno.github.io/jpeg-to-pdf/) - works on all devices including smartphones!
 
-```
-No installation required. No server needed. Just double-click and go.
-```
+### Option 2: Run Locally
+Open `index.html` directly in your browser.
+
+> ⚠️ **Note:** Running locally by opening `index.html` only works on **desktop/laptop computers**. Mobile browsers block loading local CSS/JS files for security reasons. For mobile use, please use the live demo link above.
 
 ## 📁 Project Structure
 
@@ -35,7 +43,7 @@ jpg-to-pdf/
 
 ## 🎯 How to Use
 
-1. **Open** `index.html` in your browser
+1. **Open** the app (via live demo or local file)
 2. **Select** JPEG images by clicking "Browse Files" or dragging onto the upload zone
 3. **Reorder** images by dragging them to your preferred position
 4. **Remove** unwanted images by clicking the X button (appears on hover)
@@ -50,10 +58,12 @@ jpg-to-pdf/
 
 ## 📱 Mobile Support
 
-The application is fully responsive and works on smartphones and tablets. On mobile:
+The application is fully responsive and works on smartphones and tablets:
 - Tap "Browse Files" to select photos from your camera roll
 - Touch and drag to reorder images
 - Tap the X button to remove images
+
+> 📌 **For mobile devices**, please use the [live demo](https://omnikingzeno.github.io/jpeg-to-pdf/) as local HTML files don't work on mobile browsers.
 
 ## 🛠️ Technologies Used
 
@@ -69,3 +79,4 @@ MIT License - feel free to use this project for personal or commercial purposes.
 ---
 
 Made with ❤️ for easy image-to-PDF conversion
+
