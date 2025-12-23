@@ -19,6 +19,18 @@ Works on all devices - desktop, tablet, and mobile!
 - 🌙 **Beautiful Dark Theme** - Modern, professional UI
 - 📱 **Fully Responsive** - Works on desktop, tablet, and mobile
 - 🔌 **Works Offline** - No internet connection required (when hosted)
+- 🔒 **100% Private** - Your images never leave your device
+
+## 🔒 Privacy
+
+**Your images are completely private.** This app processes everything locally in your browser:
+
+- ✅ **No uploads** - Images are never sent to any server
+- ✅ **No tracking** - We don't collect any data about your files
+- ✅ **No backend** - 100% client-side processing using JavaScript
+- ✅ **No cookies** - No tracking cookies or analytics
+
+The website only serves the static HTML/CSS/JS files. All image processing and PDF generation happens entirely on your device.
 
 ## 🚀 Quick Start
 
