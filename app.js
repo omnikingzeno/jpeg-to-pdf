@@ -16,6 +16,7 @@ class JPEGToPDFConverter {
         this.imagesGrid = document.getElementById('imagesGrid');
         this.imageCount = document.getElementById('imageCount');
 
+        this.reverseOrderBtn = document.getElementById('reverseOrderBtn');
         this.clearAllBtn = document.getElementById('clearAllBtn');
         this.generatePdfBtn = document.getElementById('generatePdfBtn');
         this.loadingOverlay = document.getElementById('loadingOverlay');
@@ -46,7 +47,7 @@ class JPEGToPDFConverter {
         this.uploadZone.addEventListener('drop', (e) => this.handleDrop(e));
 
         // Action buttons
-
+        this.reverseOrderBtn.addEventListener('click', () => this.reverseOrder());
         this.clearAllBtn.addEventListener('click', () => this.clearAll());
         this.generatePdfBtn.addEventListener('click', () => this.generatePDF());
         this.closeModalBtn.addEventListener('click', () => this.hideModal());
@@ -224,6 +225,11 @@ class JPEGToPDFConverter {
         if (this.images.length === 0) {
             this.previewSection.classList.add('hidden');
         }
+    }
+
+    reverseOrder() {
+        this.images.reverse();
+        this.renderImages();
     }
 
     clearAll() {
