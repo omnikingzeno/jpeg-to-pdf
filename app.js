@@ -7,6 +7,13 @@ class JPEGToPDFConverter {
         this.draggedItem = null;
         this.draggedOverItem = null;
 
+        // Quality presets: jpegQuality (0-1), maxDimension (pixels, null = no resize)
+        this.qualitySettings = {
+            original: { jpegQuality: 0.92, maxDimension: null },
+            balanced: { jpegQuality: 0.75, maxDimension: 2400 },
+            compressed: { jpegQuality: 0.60, maxDimension: 1600 }
+        };
+
         // DOM Elements
         this.uploadZone = document.getElementById('uploadZone');
         this.fileInput = document.getElementById('fileInput');
@@ -19,6 +26,7 @@ class JPEGToPDFConverter {
         this.reverseOrderBtn = document.getElementById('reverseOrderBtn');
         this.clearAllBtn = document.getElementById('clearAllBtn');
         this.generatePdfBtn = document.getElementById('generatePdfBtn');
+        this.qualitySelect = document.getElementById('qualitySelect');
         this.loadingOverlay = document.getElementById('loadingOverlay');
         this.successModal = document.getElementById('successModal');
         this.closeModalBtn = document.getElementById('closeModalBtn');
@@ -277,9 +285,12 @@ class JPEGToPDFConverter {
 
                 const image = this.images[i];
 
-                // Use canvas to bake in the browser's auto-applied EXIF orientation
-                // Modern browsers auto-rotate images, but jsPDF uses raw data
-                const correctedImageData = await this.correctImageOrientation(image.data);
+                // Get selected quality settings
+                const qualityMode = this.qualitySelect.value;
+                const settings = this.qualitySettings[qualityMode];
+
+                // Process image: correct orientation and apply compression
+                const correctedImageData = await this.processImage(image.data, settings);
 
                 // Get dimensions of the corrected image
                 const dimensions = await this.getImageDimensions(correctedImageData);
@@ -331,25 +342,37 @@ class JPEGToPDFConverter {
         });
     }
 
-    // Bake in the browser's auto-applied EXIF orientation via canvas
-    // Modern browsers auto-rotate images based on EXIF, but jsPDF uses raw data
-    // Drawing to canvas captures the correctly-oriented pixels
-    correctImageOrientation(dataUrl) {
+    // Process image: correct orientation, optionally resize, and compress
+    // settings: { jpegQuality: 0-1, maxDimension: number or null }
+    processImage(dataUrl, settings) {
         return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-                // Use the image's natural (browser-corrected) dimensions
-                canvas.width = img.width;
-                canvas.height = img.height;
+                let width = img.width;
+                let height = img.height;
+
+                // Resize if maxDimension is set and image exceeds it
+                if (settings.maxDimension && (width > settings.maxDimension || height > settings.maxDimension)) {
+                    if (width > height) {
+                        height = Math.round(height * (settings.maxDimension / width));
+                        width = settings.maxDimension;
+                    } else {
+                        width = Math.round(width * (settings.maxDimension / height));
+                        height = settings.maxDimension;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
 
                 // Draw the image - browser has already applied EXIF rotation
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, width, height);
 
-                // Export as JPEG - this "bakes in" the correct orientation
-                resolve(canvas.toDataURL('image/jpeg', 0.92));
+                // Export as JPEG with specified quality
+                resolve(canvas.toDataURL('image/jpeg', settings.jpegQuality));
             };
             img.src = dataUrl;
         });
