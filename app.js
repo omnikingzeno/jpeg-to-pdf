@@ -277,9 +277,9 @@ class JPEGToPDFConverter {
 
                 const image = this.images[i];
 
-                // Read EXIF orientation and correct the image
-                const orientation = await this.getExifOrientation(image.data);
-                const correctedImageData = await this.correctImageOrientation(image.data, orientation);
+                // Use canvas to bake in the browser's auto-applied EXIF orientation
+                // Modern browsers auto-rotate images, but jsPDF uses raw data
+                const correctedImageData = await this.correctImageOrientation(image.data);
 
                 // Get dimensions of the corrected image
                 const dimensions = await this.getImageDimensions(correctedImageData);
@@ -331,129 +331,24 @@ class JPEGToPDFConverter {
         });
     }
 
-    // Read EXIF orientation from JPEG data
-    getExifOrientation(dataUrl) {
+    // Bake in the browser's auto-applied EXIF orientation via canvas
+    // Modern browsers auto-rotate images based on EXIF, but jsPDF uses raw data
+    // Drawing to canvas captures the correctly-oriented pixels
+    correctImageOrientation(dataUrl) {
         return new Promise((resolve) => {
-            // Convert base64 to array buffer
-            const base64 = dataUrl.split(',')[1];
-            const binary = atob(base64);
-            const len = binary.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
-            const view = new DataView(bytes.buffer);
-
-            // Check for JPEG SOI marker
-            if (view.getUint16(0, false) !== 0xFFD8) {
-                resolve(1); // Not a JPEG, return default orientation
-                return;
-            }
-
-            let offset = 2;
-            while (offset < view.byteLength) {
-                if (view.getUint8(offset) !== 0xFF) {
-                    resolve(1);
-                    return;
-                }
-
-                const marker = view.getUint8(offset + 1);
-
-                // APP1 marker (contains EXIF)
-                if (marker === 0xE1) {
-                    const exifOffset = offset + 4;
-
-                    // Check for "Exif" string
-                    if (view.getUint32(exifOffset, false) !== 0x45786966) {
-                        resolve(1);
-                        return;
-                    }
-
-                    const tiffOffset = exifOffset + 6;
-                    const littleEndian = view.getUint16(tiffOffset, false) === 0x4949;
-
-                    const ifdOffset = view.getUint32(tiffOffset + 4, littleEndian) + tiffOffset;
-                    const numEntries = view.getUint16(ifdOffset, littleEndian);
-
-                    for (let i = 0; i < numEntries; i++) {
-                        const entryOffset = ifdOffset + 2 + (i * 12);
-                        const tag = view.getUint16(entryOffset, littleEndian);
-
-                        // Orientation tag (0x0112)
-                        if (tag === 0x0112) {
-                            const orientation = view.getUint16(entryOffset + 8, littleEndian);
-                            resolve(orientation);
-                            return;
-                        }
-                    }
-                    resolve(1);
-                    return;
-                }
-
-                // Skip to next marker
-                const segmentLength = view.getUint16(offset + 2, false);
-                offset += 2 + segmentLength;
-            }
-
-            resolve(1); // Default orientation
-        });
-    }
-
-    // Rotate and correct image based on EXIF orientation
-    correctImageOrientation(dataUrl, orientation) {
-        return new Promise((resolve) => {
-            if (orientation === 1) {
-                // No rotation needed
-                resolve(dataUrl);
-                return;
-            }
-
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-                let width = img.width;
-                let height = img.height;
+                // Use the image's natural (browser-corrected) dimensions
+                canvas.width = img.width;
+                canvas.height = img.height;
 
-                // Set proper canvas size based on orientation
-                if (orientation >= 5 && orientation <= 8) {
-                    // Rotated 90° or 270° - swap dimensions
-                    canvas.width = height;
-                    canvas.height = width;
-                } else {
-                    canvas.width = width;
-                    canvas.height = height;
-                }
-
-                // Apply transformation based on orientation
-                switch (orientation) {
-                    case 2: // Flip horizontal
-                        ctx.transform(-1, 0, 0, 1, width, 0);
-                        break;
-                    case 3: // Rotate 180°
-                        ctx.transform(-1, 0, 0, -1, width, height);
-                        break;
-                    case 4: // Flip vertical
-                        ctx.transform(1, 0, 0, -1, 0, height);
-                        break;
-                    case 5: // Rotate 90° CW + flip horizontal
-                        ctx.transform(0, 1, 1, 0, 0, 0);
-                        break;
-                    case 6: // Rotate 90° CW
-                        ctx.transform(0, 1, -1, 0, height, 0);
-                        break;
-                    case 7: // Rotate 90° CCW + flip horizontal
-                        ctx.transform(0, -1, -1, 0, height, width);
-                        break;
-                    case 8: // Rotate 90° CCW
-                        ctx.transform(0, -1, 1, 0, 0, width);
-                        break;
-                    default:
-                        break;
-                }
-
+                // Draw the image - browser has already applied EXIF rotation
                 ctx.drawImage(img, 0, 0);
+
+                // Export as JPEG - this "bakes in" the correct orientation
                 resolve(canvas.toDataURL('image/jpeg', 0.92));
             };
             img.src = dataUrl;
